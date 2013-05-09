@@ -39,13 +39,13 @@ describe MtGox::Client do
 
   describe '#ticker' do
     before do
-      stub_get('/api/1/BTCUSD/ticker').
+      stub_get('/api/1/BTCEUR/ticker').
         to_return(body: fixture('ticker.json'))
     end
 
     it "should fetch the ticker" do
       ticker = @client.ticker
-      a_get('/api/1/BTCUSD/ticker').
+      a_get('/api/1/BTCEUR/ticker').
         should have_been_made
       ticker.buy.should  == 5.53587
       ticker.sell.should == 5.56031
@@ -60,7 +60,7 @@ describe MtGox::Client do
     it "should fetch the ticker and keep previous price" do
       ticker = @client.ticker
       ticker = @client.ticker
-      a_get('/api/1/BTCUSD/ticker').
+      a_get('/api/1/BTCEUR/ticker').
         should have_been_made.twice
       ticker.up?.should == false
       ticker.down?.should == false
@@ -88,14 +88,14 @@ describe MtGox::Client do
 
   describe 'depth methods' do
     before :each do
-      stub_get('/api/1/BTCUSD/depth/fetch').
+      stub_get('/api/1/BTCEUR/depth/fetch').
         to_return(body: fixture('depth.json'))
     end
 
     describe '#asks' do
       it "should fetch open asks" do
         asks = @client.asks
-        a_get('/api/1/BTCUSD/depth/fetch').
+        a_get('/api/1/BTCEUR/depth/fetch').
           should have_been_made
         asks.first.price.should == 114
         asks.first.eprice.should == 114.74584801207851
@@ -112,7 +112,7 @@ describe MtGox::Client do
     describe "#bids" do
       it "should fetch open bids" do
         bids = @client.bids
-        a_get('/api/1/BTCUSD/depth/fetch').
+        a_get('/api/1/BTCEUR/depth/fetch').
           should have_been_made
         bids.first.price.should == 113.0
         bids.first.eprice.should == 112.2655
@@ -128,7 +128,7 @@ describe MtGox::Client do
     describe "#offers" do
       it "should fetch both bids and asks, with only one call" do
         offers = @client.offers
-        a_get('/api/1/BTCUSD/depth/fetch').
+        a_get('/api/1/BTCEUR/depth/fetch').
           should have_been_made.once
         offers[:asks].first.price.should == 114
         offers[:asks].first.eprice.should == 114.74584801207851
@@ -142,7 +142,7 @@ describe MtGox::Client do
     describe '#min_ask' do
       it "should fetch the lowest priced ask" do
         min_ask = @client.min_ask
-        a_get('/api/1/BTCUSD/depth/fetch').
+        a_get('/api/1/BTCEUR/depth/fetch').
           should have_been_made.once
         min_ask.price.should == 114
         min_ask.eprice.should == 114.74584801207851
@@ -153,7 +153,7 @@ describe MtGox::Client do
     describe '#max_bid' do
       it "should fetch the highest priced bid" do
         max_bid = @client.max_bid
-        a_get('/api/1/BTCUSD/depth/fetch').
+        a_get('/api/1/BTCEUR/depth/fetch').
           should have_been_made.once
         max_bid.price.should == 113
         max_bid.eprice.should == 112.2655
@@ -165,13 +165,13 @@ describe MtGox::Client do
 
   describe '#trades' do
     before do
-      stub_get('/api/1/BTCUSD/trades/fetch').
+      stub_get('/api/1/BTCEUR/trades/fetch').
         to_return(body: fixture('trades.json'))
     end
 
     it "should fetch trades" do
       trades = @client.trades
-      a_get('/api/1/BTCUSD/trades/fetch').
+      a_get('/api/1/BTCEUR/trades/fetch').
         should have_been_made
       trades.last.date.should == Time.utc(2013, 4, 12, 15, 20, 3)
       trades.last.price.should == 73.19258
@@ -183,14 +183,14 @@ describe MtGox::Client do
   describe '#trades :since' do
     before do
       trades = MultiJson.load(fixture('trades.json'))
-      stub_get('/api/1/BTCUSD/trades/fetch?since=1365780002144150').
+      stub_get('/api/1/BTCEUR/trades/fetch?since=1365780002144150').
         to_return(body: MultiJson.dump({result: 'success', return: trades['return'].select{|t| t['tid'] >= '1365780002144150'}}))
     end
 
     it "should fetch trades since an id" do
       trades = @client.trades :since => 1365780002144150
       #puts trades.inspect
-      a_get('/api/1/BTCUSD/trades/fetch?since=1365780002144150').
+      a_get('/api/1/BTCEUR/trades/fetch?since=1365780002144150').
         should have_been_made
       trades.first.price.should == 72.98274
       trades.first.amount.should == 11.76583944
@@ -265,10 +265,10 @@ describe MtGox::Client do
       body = test_body({"type" => "bid", "amount_int" => "88000000", "price_int" => "89000"})
       body_market = test_body({"type" => "bid", "amount_int" => "88000000"})
 
-      stub_post('/api/1/BTCUSD/order/add').
+      stub_post('/api/1/BTCEUR/order/add').
         with(body: body, headers: test_headers(@client, body)).
         to_return(body: fixture('buy.json'))
-      stub_post('/api/1/BTCUSD/order/add').
+      stub_post('/api/1/BTCEUR/order/add').
         with(body: body_market, headers: test_headers(@client, body_market)).
         to_return(body: fixture('buy.json'))
     end
@@ -276,7 +276,7 @@ describe MtGox::Client do
     it "should place a bid" do
       buy = @client.buy!(0.88, 0.89)
       body = test_body({"type" => "bid", "amount_int" => "88000000", "price_int" => "89000"})
-      a_post("/api/1/BTCUSD/order/add").
+      a_post("/api/1/BTCEUR/order/add").
         with(body: body, headers: test_headers(@client, body)).
         should have_been_made
       buy.should == "490a214f-9a30-449f-acb8-780f9046502f"
@@ -285,7 +285,7 @@ describe MtGox::Client do
     it "should place a market bid" do
       buy = @client.buy!(0.88, :market)
       body_market = test_body({"type" => "bid", "amount_int" => "88000000"})
-      a_post("/api/1/BTCUSD/order/add").
+      a_post("/api/1/BTCEUR/order/add").
         with(body: body_market, headers: test_headers(@client, body_market)).
         should have_been_made
       buy.should == "490a214f-9a30-449f-acb8-780f9046502f"
@@ -297,10 +297,10 @@ describe MtGox::Client do
       body = test_body({"type" => "ask", "amount_int" => "88000000", "price_int" => "8900000"})
       body_market = test_body({"type" => "ask", "amount_int" => "88000000"})
 
-      stub_post('/api/1/BTCUSD/order/add').
+      stub_post('/api/1/BTCEUR/order/add').
         with(body: body, headers: test_headers(@client, body)).
         to_return(body: fixture('sell.json'))
-      stub_post('/api/1/BTCUSD/order/add').
+      stub_post('/api/1/BTCEUR/order/add').
         with(body: body_market, headers: test_headers(@client, body_market)).
         to_return(body: fixture('sell.json'))
     end
@@ -308,7 +308,7 @@ describe MtGox::Client do
     it "should place an ask" do
       body = test_body({"type" => "ask", "amount_int" => "88000000", "price_int" => "8900000"})
       sell = @client.sell!(0.88, 89.0)
-      a_post("/api/1/BTCUSD/order/add").
+      a_post("/api/1/BTCEUR/order/add").
         with(body: body, headers: test_headers(@client, body)).
         should have_been_made
       sell.should == "a20329fe-c0d5-4378-b204-79a7800d41e7"
@@ -317,7 +317,7 @@ describe MtGox::Client do
     it "should place a market ask" do
       body_market = test_body({"type" => "ask", "amount_int" => "88000000"})
       sell = @client.sell!(0.88, :market)
-      a_post("/api/1/BTCUSD/order/add").
+      a_post("/api/1/BTCEUR/order/add").
         with(body: body_market, headers: test_headers(@client, body_market)).
         should have_been_made
       sell.should == "a20329fe-c0d5-4378-b204-79a7800d41e7"
@@ -330,7 +330,7 @@ describe MtGox::Client do
       stub_post('/api/1/generic/orders').
         with(body: test_body, headers: test_headers(@client)).
         to_return(body: fixture('orders.json'))
-      stub_post('/api/1/BTCUSD/order/cancel').
+      stub_post('/api/1/BTCEUR/order/cancel').
         with(body: cancel_body, headers: test_headers(@client, cancel_body)).
         to_return(body: fixture('cancel.json'))
     end
@@ -342,7 +342,7 @@ describe MtGox::Client do
         a_post("/api/1/generic/orders").
           with(body: test_body, headers: test_headers(@client)).
           should have_been_made.once
-        a_post('/api/1/BTCUSD/order/cancel').
+        a_post('/api/1/BTCEUR/order/cancel').
           with(body: cancel_body, headers: test_headers(@client, cancel_body)).
           should have_been_made
         cancel[:buys].length.should == 0
@@ -359,7 +359,7 @@ describe MtGox::Client do
       it "should cancel an order" do
         cancel = @client.cancel({'oid' => "fda8917a-63d3-4415-b827-758408013690", 'type' => 2})
         body = test_body({"oid" => "fda8917a-63d3-4415-b827-758408013690"})
-        a_post('/api/1/BTCUSD/order/cancel').
+        a_post('/api/1/BTCEUR/order/cancel').
           with(body: body, headers: test_headers(@client, body)).
           should have_been_made
         cancel[:buys].length.should == 0
