@@ -55,7 +55,8 @@ module MtGox
       ticker = get('/api/1/BTCEUR/ticker')
       Ticker.instance.buy    = value_currency ticker['buy']
       Ticker.instance.high   = value_currency ticker['high']
-      Ticker.instance.price  = value_currency ticker['last_all']
+      #Ticker.instance.price  = value_currency ticker['last_all']
+      Ticker.instance.price  = value_currency ticker['last']
       Ticker.instance.low    = value_currency ticker['low']
       Ticker.instance.sell   = value_currency ticker['sell']
       Ticker.instance.volume = value_bitcoin  ticker['vol']
